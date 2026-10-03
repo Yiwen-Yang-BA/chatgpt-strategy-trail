@@ -1,0 +1,17 @@
+{
+  "name": "chatgpt-strategy-trail",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "用历史 OHLC 数据模拟均线交叉策略，把信号、下一期开盘成交、费用和权益变化串在一起。",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.mjs",
+    "dev": "node --watch --env-file-if-exists=.env server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check server.mjs && node --check project.mjs && node --check public/app.js"
+  },
+  "license": "MIT"
+}

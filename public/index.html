@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="用历史 OHLC 数据模拟均线交叉策略，把信号、下一期开盘成交、费用和权益变化串在一起。"
+    />
+    <title>Strategy Trail · AI 小工具</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/data.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand"><span class="logo">S</span>Strategy Trail</div>
+        <div class="side-intro">
+          <div class="eyebrow">DATA & FINANCE STUDIO</div>
+          <div class="nav-item">均线策略实验</div>
+        </div>
+        <div class="side-note">
+          把一个想法，变成可以使用的结果。<br />轻量、专注，按你的节奏。
+        </div>
+        <div class="side-bottom">
+          <div class="eyebrow">CONNECTION</div>
+          <label
+            ><span class="sr-only" hidden>运行模式</span
+            ><select id="mode" aria-label="运行模式"></select
+          ></label>
+        </div>
+        <div class="side-footer">
+          DATA EDITION / 06<br />Built for a little more clarity.
+        </div>
+      </aside>
+      <main class="main">
+        <header class="topbar">
+          <span class="crumb">我的工作台 &nbsp; / &nbsp; 均线策略实验</span
+          ><span class="top-meta"
+            ><i class="dot"></i><span id="connection">正在连接…</span></span
+          >
+        </header>
+        <section class="hero">
+          <div class="eyebrow">FOLLOW THE RULE. TRACE EVERY TRADE.</div>
+          <h1>让每一笔成交，都有来路。</h1>
+          <p class="description">
+            用历史 OHLC
+            数据模拟均线交叉策略，把信号、下一期开盘成交、费用和权益变化串在一起。
+          </p>
+        </section>
+        <section class="data-layout">
+          <section class="panel">
+            <div class="panel-head">
+              <h2>历史行情与规则</h2>
+              <button id="sample" class="small">构造示例</button>
+            </div>
+            <p class="source-note">固定均线策略 · 历史模拟 · 无实际下单</p>
+            <form id="strategy-form">
+              <label
+                >OHLC 数据<textarea
+                  id="csv"
+                  rows="12"
+                  maxlength="250000"
+                  required
+                  spellcheck="false"
+                  placeholder="date,open,high,low,close"
+                ></textarea></label
+              ><input
+                id="file"
+                type="file"
+                accept=".csv"
+                class="upload-input"
+                aria-label="导入OHLC CSV"
+              />
+              <div class="wide-controls" style="grid-template-columns: 1fr 1fr">
+                <label
+                  >快均线窗口<input
+                    id="fast"
+                    type="number"
+                    value="3"
+                    min="2"
+                    max="100"
+                    required /></label
+                ><label
+                  >慢均线窗口<input
+                    id="slow"
+                    type="number"
+                    value="7"
+                    min="3"
+                    max="200"
+                    required /></label
+                ><label
+                  >初始现金<input
+                    id="cash"
+                    type="number"
+                    value="100000"
+                    min="1"
+                    max="1000000000000"
+                    step="0.01"
+                    required /></label
+                ><label
+                  >单边手续费 · 基点<input
+                    id="fee"
+                    type="number"
+                    value="10"
+                    min="0"
+                    max="1000"
+                    step="0.1"
+                    required
+                /></label>
+              </div>
+              <label
+                >每年期数<select id="frequency">
+                  <option value="252">交易日 · 252</option>
+                  <option value="12">月度 · 12</option>
+                  <option value="52">周度 · 52</option>
+                  <option value="365">自然日 · 365</option>
+                </select></label
+              ><button id="analyze" class="primary" style="margin-top: 18px">
+                运行历史模拟 ↗
+              </button>
+            </form>
+            <div class="divider"></div>
+            <p class="hint">
+              1 基点 =
+              0.01%。收盘信号下一期开盘成交；末尾持仓继续保留，以末收盘价估值。
+            </p>
+          </section>
+          <div>
+            <div id="metrics" class="metric-grid"></div>
+            <section class="panel data-panel">
+              <div class="result-title">
+                <h2>价格与均线</h2>
+                <span class="chip">CLOSE → NEXT OPEN</span>
+              </div>
+              <div id="price-chart" class="chart-wrap">
+                <div class="empty">
+                  <div class="symbol">↗</div>
+                  <h3>先观察规则，再看结果</h3>
+                  <p>加载构造示例，追踪每一次交叉。</p>
+                </div>
+              </div>
+            </section>
+            <section class="panel data-panel">
+              <h2>账户权益与基准</h2>
+              <div id="equity-chart" class="chart-wrap"></div>
+              <div id="ending" class="hint"></div>
+            </section>
+            <section class="panel data-panel">
+              <h2>回撤与成交记录</h2>
+              <div id="drawdown-chart" class="chart-wrap"></div>
+              <div id="trade-summary" class="hint"></div>
+              <div id="trades" class="table-wrap"></div>
+            </section>
+            <section class="panel data-panel">
+              <h2>运行解读</h2>
+              <p id="warnings" class="warning-list"></p>
+              <div id="meta" class="meta"></div>
+              <div id="insight" class="insight">
+                指标由本地回测规则计算；AI 仅解释汇总结果。
+              </div>
+              <div id="exports" class="toolbar" hidden>
+                <button id="export-html" class="primary">导出 HTML 报告</button
+                ><button id="export-csv" class="small">导出交易 CSV</button
+                ><button id="export-json" class="small">导出 JSON</button>
+              </div>
+            </section>
+          </div>
+        </section>
+        <footer class="footer">
+          <span>Strategy Trail · 独立轻量实现</span
+          ><span
+            >灵感来自
+            <a
+              href="https://github.com/kernc/backtesting.py"
+              target="_blank"
+              rel="noopener noreferrer"
+              >kernc/backtesting.py</a
+            >
+            &nbsp; / &nbsp; 06 OF 10</span
+          >
+        </footer>
+      </main>
+    </div>
+    <div id="toast" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
